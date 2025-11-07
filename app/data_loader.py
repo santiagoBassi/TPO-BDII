@@ -9,7 +9,7 @@ al modelo de NoSQL diseñado y los carga en las colecciones de MongoDB
 y las claves de Redis correspondientes.
 
 Uso:
-    python loadData.py /ruta/a/la/carpeta/con/csvs/
+    python data_loader.py /ruta/a/la/carpeta/con/csvs/
 """
 
 import sys
