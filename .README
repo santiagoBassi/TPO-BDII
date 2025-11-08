@@ -1,0 +1,11 @@
+para levantarlo, hace falta docker-compose. Si no lo tenes instalado, instala con "sudo apt install docker-compose"
+
+Desde la raiz del proyecto, ejecuta los siguientes comandos:
+
+Para levantar en segundo plano: "docker-compose up -d --build" (si ya lo buildeaste antes, levantalo con "docker-compose up -d")
+
+Despues: "docker exec -it app bash"
+
+En el contenedor, ejecuta: "python main.py"
+
+para parar el contenedor: "docker-compose down"
