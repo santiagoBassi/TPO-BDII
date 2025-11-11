@@ -66,6 +66,28 @@ def main(base_path):
     
     print(f"Se encontraron {len(clientes_lookup)} clientes, {len(agentes_lookup)} agentes y datos de vehículos.")
 
+    vehiculos_bulk_ops = []
+
+    for v_list in vehiculos_lookup.values():
+        for v in v_list:
+            vehiculos_bulk_ops.append({
+                "_id": parse_int(v['id_vehiculo']),
+                "idVehiculo": parse_int(v['id_vehiculo']),
+                "idCliente": parse_int(v['id_cliente']),
+                "marca": v['marca'],
+                "modelo": v['modelo'],
+                "anio": parse_int(v['anio']),
+                "patente": v['patente'],
+                "nroChasis": v['nro_chasis'],
+                "asegurado": parse_bool(v.get('asegurado', 'True')),
+            })
+
+    if vehiculos_bulk_ops:
+        db.vehiculos.insert_many(vehiculos_bulk_ops)
+
+    print(f"Se insertaron {len(vehiculos_bulk_ops)} vehículos en la colección 'vehiculos'.")
+
+
     print("Cargando Agentes...")
     agentes_bulk_ops = []
     for agente_id, agente in agentes_lookup.items():
@@ -107,11 +129,7 @@ def main(base_path):
             "provincia": cliente['provincia'],
             "activo": parse_bool(cliente['activo']),
             "vehiculos": [],
-            "polizas_resumen": [],
-            "stats": {
-                "cobertura_total_activa": 0,
-                "polizas_activas": 0
-            }
+            "polizas_resumen": []
         }
         
         if cliente_id in vehiculos_lookup:
