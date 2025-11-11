@@ -5,14 +5,14 @@ def q7_top10_clientes_cobertura_total():
     pipeline = [
         {"$lookup": {
             "from": "polizas",
-            "localField": "idCliente",
-            "foreignField": "idCliente",
+            "localField": "_id",
+            "foreignField": "id_cliente",
             "as": "polizas"
         }},
         {"$unwind": "$polizas"},
         {"$group": {
-            "_id": {"idCliente": "$idCliente", "Cliente": {"$concat": ["$nombre", " ", "$apellido"]}},
-            "CoberturaTotal": {"$sum": "$polizas.coberturaTotal"}
+            "_id": {"idCliente": "$_id", "Cliente": {"$concat": ["$nombre", " ", "$apellido"]}},
+            "CoberturaTotal": {"$sum": "$polizas.cobertura_total"}
         }},
         {"$sort": {"CoberturaTotal": -1}},
         {"$limit": 10},
