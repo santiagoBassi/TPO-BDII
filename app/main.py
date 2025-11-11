@@ -1,4 +1,4 @@
-from queries import *
+from query import *
 from pprint import pprint
 
 queries = [
