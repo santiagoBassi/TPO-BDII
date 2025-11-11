@@ -201,10 +201,30 @@ def q7_top10_clientes_cobertura_total():
 
 def q8_siniestros_accidente_ultimo_anio():
     hace_un_anio = datetime.now() - timedelta(days=365)
-    return list(db.siniestros.find(
-        {"tipo": "Accidente", "fecha": {"$gte": hace_un_anio}},
-        {"_id": 0, "Siniestro": "$idSiniestro", "Fecha": "$fecha", "Monto": "$montoEstimado"}
-    ))
+    pipeline = [
+        {
+            "$match": {
+                "tipo": "Accidente",
+                "fecha": {"$gte": hace_un_anio}
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "Siniestro": "$_id",
+                "Fecha": {
+                    "$dateToString": {
+                        "format": "%Y-%m-%d",
+                        "date": "$fecha"
+                    }
+                },
+                "Monto": "$monto_estimado",
+                "Descripcion": "$descripcion",
+                "Estado": "$estado"
+            }
+        }
+    ]
+    return list(db.siniestros.aggregate(pipeline))
 
 
 def q9_polizas_activas_ordenadas():
