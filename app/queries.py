@@ -64,6 +64,7 @@ def q2_siniestros_abiertos_cliente():
     ]
     return list(db.siniestros.aggregate(pipeline))
 
+
 def q3_vehiculos_con_cliente_poliza():
         return list(db.vehiculos.aggregate( [
         {"$match": {"asegurado": True}},
@@ -121,9 +122,6 @@ def q3_vehiculos_con_cliente_poliza():
     ]))
 
 
-
-
-
 def q4_clientes_sin_polizas_activas():
     return list(db.clientes.find({
         "polizas_resumen.estado": { "$nin": ["Activa"] }
@@ -149,6 +147,7 @@ def q5_agentes_activos_cant_polizas():
         }}
     ]
     return list(db.agentes.aggregate(pipeline))
+
 
 def q6_polizas_vencidas_con_cliente():
     pipeline = [
@@ -178,6 +177,7 @@ def q6_polizas_vencidas_con_cliente():
         }
     ]
     return list(db.polizas.aggregate(pipeline))
+
 
 def q7_top10_clientes_cobertura_total():
     pipeline = [
@@ -270,7 +270,7 @@ def q10_polizas_suspendidas_estado_cliente():
     ]
     return list(db.polizas.aggregate(pipeline))
 
-# 11
+
 def q11_clientes_multiples_vehiculos():
     pipeline = [
         {"$group": {"_id": "$idCliente", "CantidadVehiculos": {"$sum": 1}}},
@@ -290,7 +290,7 @@ def q11_clientes_multiples_vehiculos():
     ]
     return list(db.vehiculos.aggregate(pipeline))
 
-# 12
+
 def q12_agentes_cant_siniestros():
     pipeline = [
         {"$lookup": {
@@ -324,6 +324,8 @@ def q12_agentes_cant_siniestros():
         }}
     ]
     return list(db.agentes.aggregate(pipeline))
+
+
 def q13_abm_clientes():
     opcion = input("Ingrese opción (A=Alta, B=Baja, M=Modificación): ").strip().upper()
 
@@ -401,6 +403,7 @@ def q13_abm_clientes():
         print("Opción no válida.")
         return []
 
+
 def q14_alta_siniestro():
     print("\n--- Alta de nuevo siniestro ---")
 
@@ -458,7 +461,6 @@ def q14_alta_siniestro():
 
     print(f"\nSiniestro creado correctamente con ID {nuevo_id} para la póliza {nro_poliza}.")
     return [nuevo]
-
 
 
 def q15_emision_nueva_poliza():
