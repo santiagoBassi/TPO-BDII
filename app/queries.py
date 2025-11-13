@@ -368,7 +368,7 @@ def q13_abm_clientes():
 
         db.clientes.update_one({"_id": cliente["_id"]}, {"$set": {"activo": False}})
         print(f"Cliente {cliente['nombre']} {cliente['apellido']} marcado como inactivo.")
-        return [cliente]
+        return [db.clientes.find_one({"dni": dni})]
 
     elif opcion == "M":
         print("\n--- Modificación de cliente ---")
@@ -460,6 +460,7 @@ def q14_alta_siniestro():
     db.siniestros.insert_one(nuevo)
 
     print(f"\nSiniestro creado correctamente con ID {nuevo_id} para la póliza {nro_poliza}.")
+    nuevo["fecha"] = nuevo["fecha"].strftime("%Y-%m-%d")
     return [nuevo]
 
 
@@ -479,11 +480,11 @@ def q15_emision_nueva_poliza():
 
     id_cliente = cliente["_id"]
 
-    id_agente = int(input("Ingrese el ID del agente: ").strip())
-    agente = db.agentes.find_one({"_id": id_agente})
+    id_agente = input("Ingrese la matrícula del agente: ").strip()
+    agente = db.agentes.find_one({"matricula": id_agente})
 
     if not agente:
-        print("No existe un agente con esa ID.")
+        print("No existe un agente con esa matrícula.")
         return []
 
     if not agente.get("activo", True):
@@ -572,5 +573,7 @@ def q15_emision_nueva_poliza():
     )
 
     print(f"\nPóliza {nuevo_id} creada correctamente para {cliente['nombre']} {cliente['apellido']}.")
+    nueva_poliza["fecha_inicio"] = nueva_poliza["fecha_inicio"].strftime("%Y-%m-%d")
+    nueva_poliza["fecha_fin"] = nueva_poliza["fecha_fin"].strftime("%Y-%m-%d")
     return [nueva_poliza]
 

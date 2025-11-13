@@ -45,4 +45,3 @@ def invalidate_queries(tag):
     for q_name, tags in QUERY_TAGS.items():
         if tag in tags:
             r.delete(q_name)
-            print(f"Query invalidada: {q_name}")
