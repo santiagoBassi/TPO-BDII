@@ -45,6 +45,7 @@ def main(base_path):
     db.agentes.delete_many({})
     db.polizas.delete_many({})
     db.siniestros.delete_many({})
+    db.vehiculos.delete_many({})
     r.flushdb()
 
     print("Cargando CSVs en memoria para referencias...")
