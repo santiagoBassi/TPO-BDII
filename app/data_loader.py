@@ -261,12 +261,6 @@ def main(base_path):
                         "cobertura_total": "$cobertura_total",
                         "cant_siniestros": { "$size": "$siniestros_data" }
                     }
-                },
-                "stats_cobertura_total_activa": {
-                    "$sum": { "$cond": [{ "$eq": ["$estado", "Activa"] }, "$cobertura_total", 0] }
-                },
-                "stats_polizas_activas": {
-                    "$sum": { "$cond": [{ "$eq": ["$estado", "Activa"] }, 1, 0] }
                 }
             }
         },
