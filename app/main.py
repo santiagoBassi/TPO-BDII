@@ -1,4 +1,4 @@
-from query import *
+from queries import *
 from pprint import pprint
 
 queries = [
@@ -35,7 +35,6 @@ def main():
     print("Bienvenido al sistema de gestión de seguros.")
     
     
-
     while(True):
         print_options()
        

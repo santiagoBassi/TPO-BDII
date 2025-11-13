@@ -71,7 +71,7 @@ def q3_vehiculos_con_cliente_poliza():
         {
             "$lookup": {
                 "from": "clientes",
-                "localField": "idCliente_num",
+                "localField": "idCliente",
                 "foreignField": "_id",
                 "as": "cliente"
             }
@@ -119,8 +119,10 @@ def q3_vehiculos_con_cliente_poliza():
             }
         }
     ]
-
-    return list(db.vehiculos.aggregate(pipeline))
+    a = len(list(db.vehiculos.aggregate(pipeline)))
+    print(a)
+    input("pausa")
+    return a
 
 
 
