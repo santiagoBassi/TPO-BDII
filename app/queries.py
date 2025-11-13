@@ -1,4 +1,4 @@
-from database import db
+from database import db, r
 from datetime import datetime, timedelta
 
 
@@ -477,8 +477,8 @@ def q15_emision_nueva_poliza():
 
     id_cliente = cliente["_id"]
 
-    id_agente = input("Ingrese el ID del agente: ").strip()
-    agente = db.agentes.find({"_id": id_agente})
+    id_agente = int(input("Ingrese el ID del agente: ").strip())
+    agente = db.agentes.find_one({"_id": id_agente})
 
     if not agente:
         print("No existe un agente con esa ID.")
