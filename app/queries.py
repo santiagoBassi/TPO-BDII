@@ -256,14 +256,14 @@ def q10_polizas_suspendidas_estado_cliente():
         {"$match": {"estado": "Suspendida"}},
         {"$lookup": {
             "from": "clientes",
-            "localField": "idCliente",
-            "foreignField": "idCliente",
+            "localField": "id_cliente",
+            "foreignField": "_id",
             "as": "cliente"
         }},
         {"$unwind": "$cliente"},
         {"$project": {
             "_id": 0,
-            "Poliza": "$nroPoliza",
+            "Poliza": "$_id",
             "Cliente": {"$concat": ["$cliente.nombre", " ", "$cliente.apellido"]},
             "ClienteActivo": "$cliente.activo"
         }}
@@ -278,7 +278,7 @@ def q11_clientes_multiples_vehiculos():
         {"$lookup": {
             "from": "clientes",
             "localField": "_id",
-            "foreignField": "idCliente",
+            "foreignField": "_id",
             "as": "cliente"
         }},
         {"$unwind": "$cliente"},
