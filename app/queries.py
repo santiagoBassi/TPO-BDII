@@ -65,7 +65,7 @@ def q2_siniestros_abiertos_cliente():
     return list(db.siniestros.aggregate(pipeline))
 
 def q3_vehiculos_con_cliente_poliza():
-    pipeline = [
+        return list(db.vehiculos.aggregate( [
         {"$match": {"asegurado": True}},
         {"$addFields": {"idCliente_num": {"$toInt": "$idCliente"}}},
         {
@@ -118,11 +118,9 @@ def q3_vehiculos_con_cliente_poliza():
                 }
             }
         }
-    ]
-    a = len(list(db.vehiculos.aggregate(pipeline)))
-    print(a)
-    input("pausa")
-    return a
+    ]))
+
+
 
 
 
@@ -185,14 +183,14 @@ def q7_top10_clientes_cobertura_total():
     pipeline = [
         {"$lookup": {
             "from": "polizas",
-            "localField": "idCliente",
-            "foreignField": "idCliente",
+            "localField": "_id",
+            "foreignField": "id_cliente",
             "as": "polizas"
         }},
         {"$unwind": "$polizas"},
         {"$group": {
-            "_id": {"idCliente": "$idCliente", "Cliente": {"$concat": ["$nombre", " ", "$apellido"]}},
-            "CoberturaTotal": {"$sum": "$polizas.coberturaTotal"}
+            "_id": {"idCliente": "$_id", "Cliente": {"$concat": ["$nombre", " ", "$apellido"]}},
+            "CoberturaTotal": {"$sum": "$polizas.cobertura_total"}
         }},
         {"$sort": {"CoberturaTotal": -1}},
         {"$limit": 10},
@@ -230,10 +228,27 @@ def q8_siniestros_accidente_ultimo_anio():
 
 
 def q9_polizas_activas_ordenadas():
-    return list(db.polizas.find(
-        {"estado": "Activa"},
-        {"_id": 0, "Poliza": "$nroPoliza", "FechaInicio": "$fechaInicio", "FechaFin": "$fechaFin"}
-    ).sort("fechaInicio", 1))
+    pipeline = [
+        {"$match": {"estado": "Activa"}},
+        {"$sort": {"fecha_inicio": 1}},
+        {"$project": {
+            "_id": 0,
+            "Poliza": "$_id",
+            "FechaInicio": {
+                "$dateToString": {
+                    "format": "%Y-%m-%d",
+                    "date": "$fecha_inicio"
+                }
+            },
+            "FechaFin": {
+                "$dateToString": {
+                    "format": "%Y-%m-%d",
+                    "date": "$fecha_fin"
+                }
+            }
+        }}
+    ]
+    return list(db.polizas.aggregate(pipeline))
 
 
 def q10_polizas_suspendidas_estado_cliente():
@@ -241,14 +256,14 @@ def q10_polizas_suspendidas_estado_cliente():
         {"$match": {"estado": "Suspendida"}},
         {"$lookup": {
             "from": "clientes",
-            "localField": "idCliente",
-            "foreignField": "idCliente",
+            "localField": "id_cliente",
+            "foreignField": "_id",
             "as": "cliente"
         }},
         {"$unwind": "$cliente"},
         {"$project": {
             "_id": 0,
-            "Poliza": "$nroPoliza",
+            "Poliza": "$_id",
             "Cliente": {"$concat": ["$cliente.nombre", " ", "$cliente.apellido"]},
             "ClienteActivo": "$cliente.activo"
         }}
@@ -263,7 +278,7 @@ def q11_clientes_multiples_vehiculos():
         {"$lookup": {
             "from": "clientes",
             "localField": "_id",
-            "foreignField": "idCliente",
+            "foreignField": "_id",
             "as": "cliente"
         }},
         {"$unwind": "$cliente"},
@@ -280,21 +295,32 @@ def q12_agentes_cant_siniestros():
     pipeline = [
         {"$lookup": {
             "from": "polizas",
-            "localField": "idAgente",
-            "foreignField": "idAgente",
+            "localField": "_id",
+            "foreignField": "id_agente",
             "as": "polizas"
         }},
         {"$unwind": {"path": "$polizas", "preserveNullAndEmptyArrays": False}},
         {"$lookup": {
             "from": "siniestros",
-            "localField": "polizas.nroPoliza",
-            "foreignField": "nroPoliza",
+            "localField": "polizas._id",
+            "foreignField": "nro_poliza",
             "as": "siniestros"
+        }},
+        {"$addFields": {
+            "cantidad_siniestros": {"$size": "$siniestros"}
+        }},
+        {"$group": {
+            "_id": {
+                "idAgente": "$_id",
+                "nombre": "$nombre",
+                "apellido": "$apellido"
+            },
+            "CantidadSiniestros": {"$sum": "$cantidad_siniestros"}
         }},
         {"$project": {
             "_id": 0,
-            "Agente": {"$concat": ["$nombre", " ", "$apellido"]},
-            "CantidadSiniestros": {"$size": "$siniestros"}
+            "Agente": {"$concat": ["$_id.nombre", " ", "$_id.apellido"]},
+            "CantidadSiniestros": 1
         }}
     ]
     return list(db.agentes.aggregate(pipeline))
