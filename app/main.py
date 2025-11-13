@@ -14,9 +14,9 @@ queries = [
         (10, "Pólizas suspendidas con estado del cliente", q10_polizas_suspendidas_estado_cliente),
         (11, "Clientes con más de un vehículo asegurado", q11_clientes_multiples_vehiculos),
         (12, "Agentes y cantidad de siniestros asociados", q12_agentes_cant_siniestros),
-        (13, "ABM Clientes (ejemplo alta)", q13_abm_clientes_demo),
-        (14, "Alta de nuevos siniestros", q14_alta_siniestro_demo),
-        (15, "Emisión de nuevas pólizas", q15_emision_poliza_demo),
+        (13, "ABM Clientes (ejemplo alta)", q13_abm_clientes),
+        (14, "Alta de nuevos siniestros", q14_alta_siniestro),
+        (15, "Emisión de nuevas pólizas", q15_emision_nueva_poliza),
     ]
 
 def print_options():

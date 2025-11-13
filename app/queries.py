@@ -324,55 +324,251 @@ def q12_agentes_cant_siniestros():
         }}
     ]
     return list(db.agentes.aggregate(pipeline))
+def q13_abm_clientes():
+    opcion = input("Ingrese opción (A=Alta, B=Baja, M=Modificación): ").strip().upper()
 
-# 13
-def q13_abm_clientes_demo():
-    nuevo = {
-        "idCliente": "999",
-        "nombre": "Demo",
-        "apellido": "Cliente",
-        "dni": "12345678",
-        "email": "demo@cliente.com",
-        "telefono": "11112222",
-        "direccion": "Av. Siempre Viva 123",
-        "ciudad": "Springfield",
-        "provincia": "Buenos Aires",
-        "activo": True
-    }
-    db.clientes.insert_one(nuevo)
-    return [nuevo]
+    if opcion == "A":
+        print("\n--- Alta de nuevo cliente ---")
+        nuevo = {
+            "nombre": input("Nombre: ").strip(),
+            "apellido": input("Apellido: ").strip(),
+            "dni": input("DNI: ").strip(),
+            "email": input("Email: ").strip(),
+            "telefono": input("Teléfono: ").strip(),
+            "direccion": input("Dirección: ").strip(),
+            "ciudad": input("Ciudad: ").strip(),
+            "provincia": input("Provincia: ").strip(),
+            "activo": True,
+            "vehiculos": [],
+            "polizas_resumen": []
+        }
 
-# 14
-def q14_alta_siniestro_demo():
+        # Calcular nuevo ID
+        ultimo = db.clientes.find_one(sort=[("_id", -1)])
+        nuevo["_id"] = (ultimo["_id"] + 1) if ultimo else 1
+
+        db.clientes.insert_one(nuevo)
+        print(f"\nCliente {nuevo['nombre']} {nuevo['apellido']} agregado con ID {nuevo['_id']}.")
+        return [nuevo]
+
+    elif opcion == "B":
+        print("\n--- Baja lógica de cliente ---")
+        dni = input("Ingrese DNI del cliente a dar de baja: ").strip()
+        cliente = db.clientes.find_one({"dni": dni})
+
+        if not cliente:
+            print("No se encontró ningún cliente con ese DNI.")
+            return []
+
+        if not cliente.get("activo", True):
+            print("El cliente ya estaba inactivo.")
+            return []
+
+        db.clientes.update_one({"_id": cliente["_id"]}, {"$set": {"activo": False}})
+        print(f"Cliente {cliente['nombre']} {cliente['apellido']} marcado como inactivo.")
+        return [cliente]
+
+    elif opcion == "M":
+        print("\n--- Modificación de cliente ---")
+        dni = input("Ingrese DNI del cliente a modificar: ").strip()
+        cliente = db.clientes.find_one({"dni": dni})
+
+        if not cliente:
+            print("No se encontró ningún cliente con ese DNI.")
+            return []
+
+        print(f"Editando cliente: {cliente['nombre']} {cliente['apellido']}")
+        campos_modificables = ["email", "telefono", "direccion", "ciudad", "provincia", "activo"]
+
+        updates = {}
+        for campo in campos_modificables:
+            valor_actual = cliente.get(campo, "")
+            nuevo_valor = input(f"{campo.capitalize()} [{valor_actual}]: ").strip()
+            if nuevo_valor != "":
+                if campo == "activo":
+                    updates[campo] = nuevo_valor.lower() in ("true", "1", "si", "sí")
+                else:
+                    updates[campo] = nuevo_valor
+
+        if updates:
+            db.clientes.update_one({"_id": cliente["_id"]}, {"$set": updates})
+            print("Cliente actualizado correctamente.")
+        else:
+            print("No se realizaron cambios.")
+        return [db.clientes.find_one({"dni": dni})]
+
+    else:
+        print("Opción no válida.")
+        return []
+
+def q14_alta_siniestro():
+    print("\n--- Alta de nuevo siniestro ---")
+
+    nro_poliza = input("Ingrese número de póliza asociada (ej: POL1001): ").strip()
+    poliza = db.polizas.find_one({"_id": nro_poliza})
+
+    if not poliza:
+        print("No existe una póliza con ese número.")
+        return []
+
+    if poliza.get("estado", "").lower() != "activa":
+        print(f"La póliza {nro_poliza} no está activa (estado: {poliza.get('estado')}).")
+        return []
+
+    id_cliente = poliza.get("id_cliente")
+    id_agente = poliza.get("id_agente")
+    cliente = db.clientes.find_one({"_id": id_cliente})
+
+    if not cliente:
+        print(f"No se encontró el cliente asociado a la póliza {nro_poliza}.")
+        return []
+
+    tipo = input("Tipo de siniestro (Accidente, Robo, Incendio, etc.): ").strip() or "Accidente"
+    descripcion = input("Descripción breve: ").strip() or "Sin descripción"
+    monto_str = input("Monto estimado: ").strip()
+
+    try:
+        monto_estimado = float(monto_str) if monto_str else 0.0
+    except ValueError:
+        print("Monto inválido. Se usará 0.0")
+        monto_estimado = 0.0
+
+    estado = "Abierto"
+
+    ultimo = db.siniestros.find_one(sort=[("_id", -1)])
+    nuevo_id = (ultimo["_id"] + 1) if ultimo else 1
+
     nuevo = {
-        "idSiniestro": "9999",
-        "nroPoliza": "POL1001",
+        "_id": nuevo_id,
         "fecha": datetime.now(),
-        "tipo": "Accidente",
-        "montoEstimado": 150000.0,
-        "descripcion": "Choque demo",
-        "estado": "Abierto"
+        "tipo": tipo,
+        "monto_estimado": monto_estimado,
+        "descripcion": descripcion,
+        "estado": estado,
+        "nro_poliza": nro_poliza,
+        "id_cliente": id_cliente,
+        "id_agente": id_agente,
+        "cliente_afectado": {
+            "nombre_completo": f"{cliente['nombre']} {cliente['apellido']}",
+            "telefono": cliente.get("telefono", "")
+        }
     }
+
     db.siniestros.insert_one(nuevo)
+
+    print(f"\nSiniestro creado correctamente con ID {nuevo_id} para la póliza {nro_poliza}.")
     return [nuevo]
 
-# 15
-def q15_emision_poliza_demo():
-    cliente = db.clientes.find_one({"idCliente": "1"})
-    agente = db.agentes.find_one({"idAgente": "101"})
-    if not cliente or not agente:
-        return [{"Error": "Cliente o agente no válido"}]
 
-    nueva = {
-        "nroPoliza": "POL9999",
-        "idCliente": cliente["idCliente"],
-        "tipo": "Hogar",
-        "fechaInicio": datetime.now(),
-        "fechaFin": datetime.now() + timedelta(days=365),
-        "primaMensual": 30000,
-        "coberturaTotal": 1000000,
-        "idAgente": agente["idAgente"],
-        "estado": "Activa"
+
+def q15_emision_nueva_poliza():
+    print("\n--- Emisión de nueva póliza ---")
+
+    dni_cliente = input("Ingrese DNI del cliente: ").strip()
+    cliente = db.clientes.find_one({"dni": dni_cliente})
+
+    if not cliente:
+        print("No existe un cliente con ese DNI.")
+        return []
+    
+    if not cliente.get("activo", True):
+        print(f"El cliente {cliente['nombre']} {cliente['apellido']} no está activo.")
+        return []
+
+    id_cliente = cliente["_id"]
+
+    id_agente = input("Ingrese el ID del agente: ").strip()
+    agente = db.agentes.find({"_id": id_agente})
+
+    if not agente:
+        print("No existe un agente con esa ID.")
+        return []
+
+    if not agente.get("activo", True):
+        print(f"El agente {agente['nombre']} no está activo.")
+        return []
+
+    id_agente = agente["_id"]
+
+    usa_vehiculo = input("¿La póliza está asociada a un vehículo? (s/n): ").strip().lower()
+    vehiculo_info = {}
+    id_vehiculo = None
+
+    if usa_vehiculo == "s":
+        patente = input("Ingrese la patente del vehículo: ").strip().upper()
+        vehiculo = db.vehiculos.find_one({"patente": patente})
+
+        if not vehiculo:
+            print("No existe un vehículo con esa patente.")
+            return []
+        id_vehiculo = vehiculo["_id"]
+        vehiculo_info = {
+            "marca": vehiculo.get("marca"),
+            "modelo": vehiculo.get("modelo"),
+            "anio": vehiculo.get("anio"),
+            "patente": vehiculo.get("patente"),
+        }
+
+    tipo = input("Tipo de póliza (Auto, Vida, Hogar, etc.): ").strip() or "Auto"
+    prima_str = input("Prima mensual: ").strip()
+    cobertura_str = input("Cobertura total: ").strip()
+
+    try:
+        prima_mensual = float(prima_str) if prima_str else 0.0
+        cobertura_total = float(cobertura_str) if cobertura_str else 0.0
+    except ValueError:
+        print("Valores numéricos inválidos.")
+        return []
+
+    fecha_inicio = datetime.now()
+    duracion_anios = 1
+    fecha_fin = fecha_inicio + timedelta(days=365 * duracion_anios)
+
+    estado = "Activa"
+
+    ultimo = db.polizas.find_one(sort=[("_id", -1)])
+    if ultimo and isinstance(ultimo["_id"], str) and ultimo["_id"].startswith("POL"):
+        ult_num = int(ultimo["_id"].replace("POL", ""))
+        nuevo_id = f"POL{ult_num + 1}"
+    else:
+        nuevo_id = "POL1001"
+
+    nueva_poliza = {
+        "_id": nuevo_id,
+        "fecha_inicio": fecha_inicio,
+        "fecha_fin": fecha_fin,
+        "tipo": tipo,
+        "prima_mensual": prima_mensual,
+        "cobertura_total": cobertura_total,
+        "estado": estado,
+        "id_cliente": id_cliente,
+        "id_agente": id_agente,
+        "id_vehiculo": id_vehiculo,
+        "cliente_info": {
+            "nombre_completo": f"{cliente['nombre']} {cliente['apellido']}",
+            "activo": cliente.get("activo", True)
+        },
+        "agente_info": {
+            "nombre_completo": agente["nombre"]
+        },
+        "vehiculo_info": vehiculo_info
     }
-    db.polizas.insert_one(nueva)
-    return [nueva]
+
+    db.polizas.insert_one(nueva_poliza)
+
+    resumen = {
+        "nro_poliza": nuevo_id,
+        "tipo": tipo,
+        "fecha_fin": fecha_fin,
+        "estado": estado,
+        "cobertura_total": cobertura_total,
+        "cant_siniestros": 0
+    }
+    db.clientes.update_one(
+        {"_id": id_cliente},
+        {"$push": {"polizas_resumen": resumen}}
+    )
+
+    print(f"\nPóliza {nuevo_id} creada correctamente para {cliente['nombre']} {cliente['apellido']}.")
+    return [nueva_poliza]
+
