@@ -1,11 +1,50 @@
-para levantarlo, hace falta docker-compose. Si no lo tenes instalado, instala con "sudo apt install docker-compose"
+# 🚀 Cómo levantar el proyecto
 
-Desde la raiz del proyecto, ejecuta los siguientes comandos:
+Este proyecto se ejecuta utilizando **Docker Compose**.
 
-Para levantar en segundo plano: "docker-compose up -d --build" (si ya lo buildeaste antes, levantalo con "docker-compose up -d")
+## 📦 Requisitos
 
-Despues: "docker exec -it app bash"
+Asegurate de tener Docker Compose instalado.\
+Si no lo tenés:
 
-En el contenedor, ejecuta: "python main.py"
+``` bash
+sudo apt install docker-compose
+```
 
-para parar el contenedor: "docker-compose down"
+## ▶️ Puesta en marcha
+
+Desde la **raíz del proyecto**, ejecutá:
+
+### Levantar los contenedores
+
+**Primera vez (o si querés forzar build):**
+
+``` bash
+docker-compose up -d --build
+```
+
+**Si ya lo buildeaste antes:**
+
+``` bash
+docker-compose up -d
+```
+
+### Ingresar al contenedor principal
+
+``` bash
+docker exec -it app bash
+```
+
+### Ejecutar la aplicación
+
+Dentro del contenedor:
+
+``` bash
+python main.py
+```
+
+## ⛔ Parar los contenedores
+
+``` bash
+docker-compose down
+```
