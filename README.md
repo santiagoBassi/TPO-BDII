@@ -14,7 +14,7 @@ sudo apt install docker-compose
 
 ------------------------------------------------------------------------
 
-## ▶️ Puesta en marcha
+## Puesta en marcha
 
 Desde la **raíz del proyecto**, ejecutar:
 
